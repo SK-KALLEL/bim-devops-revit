@@ -1,0 +1,257 @@
+{
+  "Uuid": "3d008af6-6a06-4016-b588-90b552b11ba6",
+  "IsCustomNode": false,
+  "Description": "",
+  "Name": "categorie",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "DSRevitNodesUI.Categories, DSRevitNodesUI",
+      "SelectedIndex": 445,
+      "SelectedString": "OST_Walls",
+      "Id": "bb86557b81d54200b42d6a7968ac7a95",
+      "NodeType": "ExtensionNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "ecc19d22d67443148a9b85ebdea8d8b3",
+          "Name": "Category",
+          "Description": "Catégorie sélectionnée.",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Toutes les catégories intégrées."
+    },
+    {
+      "ConcreteType": "DSRevitNodesUI.Categories, DSRevitNodesUI",
+      "SelectedIndex": 502,
+      "SelectedString": "OST_Ceilings",
+      "Id": "019abc6f805e49d990941ffef6793742",
+      "NodeType": "ExtensionNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "79e92ba01cd3445c9dbe2f130ad9e44d",
+          "Name": "Category",
+          "Description": "Catégorie sélectionnée.",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Toutes les catégories intégrées."
+    },
+    {
+      "ConcreteType": "DSRevitNodesUI.Categories, DSRevitNodesUI",
+      "SelectedIndex": 617,
+      "SelectedString": "OST_Floors",
+      "Id": "eb9bb50d2c8e4be9a431be3563df978e",
+      "NodeType": "ExtensionNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "ebe23578d7a544d4a463ca619c1b8fbf",
+          "Name": "Category",
+          "Description": "Catégorie sélectionnée.",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Toutes les catégories intégrées."
+    },
+    {
+      "ConcreteType": "DSRevitNodesUI.ElementsOfCategory, DSRevitNodesUI",
+      "Id": "03e6045dfa8f4e7795cd4903faf786b2",
+      "NodeType": "ExtensionNode",
+      "Inputs": [
+        {
+          "Id": "aef812fdafc4456180290798641aa6ba",
+          "Name": "Category",
+          "Description": "Catégorie",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "72882ae4c0464327af0c282c819fad34",
+          "Name": "Elements",
+          "Description": "Classe d'élément.",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Obtenir tous les éléments de la catégorie spécifiée du modèle."
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "import clr\r\nclr.AddReference('RevitAPI')\r\nclr.AddReference('RevitServices')\r\nfrom Autodesk.Revit.DB import *\r\nfrom RevitServices.Persistence import DocumentManager\r\nfrom RevitServices.Transactions import TransactionManager\r\n\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\nwalls = IN[0]  # Liste de murs\r\n\r\nTransactionManager.Instance.EnsureInTransaction(doc)\r\n\r\nupdated = 0\r\nfor wall in walls:\r\n    # Volume (via LookupParameter, marche sur 2026.4)\r\n    vol_param = wall.LookupParameter(\"Volume\")\r\n    vol_m3 = 0\r\n    if vol_param and vol_param.HasValue:\r\n        vol_ft3 = vol_param.AsDouble()\r\n        vol_m3 = vol_ft3 * 0.028316846592  # pieds³ → m³\r\n\r\n    # Coût unitaire (180 €/m³ par défaut)\r\n    cu_param = wall.LookupParameter(\"Coût unitaire €/m³\")\r\n    cu = 180.0\r\n    if cu_param and cu_param.HasValue:\r\n        cu = cu_param.AsDouble()\r\n\r\n    # Coût total\r\n    cout_total = round(vol_m3 * cu, 2)\r\n    total_param = wall.LookupParameter(\"Coût total €\")\r\n    if total_param:\r\n        total_param.Set(cout_total)\r\n\r\n    # Corps d'état\r\n    ce_param = wall.LookupParameter(\"Corps d'état\")\r\n    if ce_param:\r\n        ce_param.Set(\"Gros-Œuvre\")\r\n\r\n    updated += 1\r\n\r\nTransactionManager.Instance.TransactionTaskDone()\r\n\r\nOUT = f\"{updated} murs mis à jour ! (Revit 2026.4)\"",
+      "Engine": "CPython3",
+      "VariableInputPorts": true,
+      "Id": "f7d2a04b6fd148769baedfca94999c1e",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [
+        {
+          "Id": "978a4e16f1544631a1457358bd13091f",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "845a1c11e97b4199b9cf0f2a90071447",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "ecc19d22d67443148a9b85ebdea8d8b3",
+      "End": "aef812fdafc4456180290798641aa6ba",
+      "Id": "2a24f0105aa54b9eb5d50b2fef55e295",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "72882ae4c0464327af0c282c819fad34",
+      "End": "978a4e16f1544631a1457358bd13091f",
+      "Id": "4768c78aa3634e3391f46d0567537951",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "EnableLegacyPolyCurveBehavior": true,
+  "Thumbnail": "",
+  "GraphDocumentationURL": null,
+  "ExtensionWorkspaceData": [
+    {
+      "ExtensionGuid": "28992e1d-abb9-417f-8b1b-05e053bee670",
+      "Name": "Propriétés",
+      "Version": "3.6",
+      "Data": {}
+    },
+    {
+      "ExtensionGuid": "DFBD9CC0-DB40-457A-939E-8C8555555A9D",
+      "Name": "Generative Design",
+      "Version": "9.1",
+      "Data": {}
+    }
+  ],
+  "Author": "",
+  "Linting": {
+    "activeLinter": "Aucun",
+    "activeLinterId": "7b75fb44-43fd-4631-a878-29f4d5d8399a",
+    "warningCount": 0,
+    "errorCount": 0
+  },
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": true,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "3.6.1.9895",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "_Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Id": "bb86557b81d54200b42d6a7968ac7a95",
+        "Name": "Categories",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 167.49250141378502,
+        "Y": 150.53287776788954
+      },
+      {
+        "Id": "019abc6f805e49d990941ffef6793742",
+        "Name": "Categories",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 4.847448608593709,
+        "Y": -469.95456020345944
+      },
+      {
+        "Id": "eb9bb50d2c8e4be9a431be3563df978e",
+        "Name": "Categories",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 8.225465877260717,
+        "Y": -293.63226542749106
+      },
+      {
+        "Id": "03e6045dfa8f4e7795cd4903faf786b2",
+        "Name": "All Elements of Category",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 515.947886317223,
+        "Y": 46.19168590689071
+      },
+      {
+        "Id": "f7d2a04b6fd148769baedfca94999c1e",
+        "Name": "Python Script",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 857.2653195057253,
+        "Y": -214.47476063417378
+      }
+    ],
+    "Annotations": [],
+    "X": 117.75127529868138,
+    "Y": 257.73887909532755,
+    "Zoom": 0.4888130489024759
+  }
+}
